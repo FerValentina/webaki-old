@@ -1,0 +1,1967 @@
+<!DOCTYPE html>
+<html lang="es" data-lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>AKI Collector — Data Readiness para operaciones que deciden.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --blue:#15A4EC;--bluel:#68C5ED;--bluem:#29ABE2;--sky:#D5F6FF;
+  --dark:#192B33;--bg:#F9FAFC;--white:#fff;
+  --ease:cubic-bezier(.16,1,.3,1);
+  --ease2:cubic-bezier(.4,0,.2,1);
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{
+  font-family:'Inter',sans-serif;
+  background:#06090f;
+  color:#e8edf2;
+  overflow-x:hidden;
+  line-height:1.6;
+}
+/* ─── CANVAS ─── */
+#bg{position:fixed;inset:0;z-index:0;pointer-events:none}
+/* ─── NAV ─── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.9rem 5%;
+  background:rgba(6,9,15,0.55);
+  backdrop-filter:blur(18px);
+  border-bottom:1px solid rgba(21,164,236,.12);
+  transition:background .3s;
+}
+nav.scrolled{background:rgba(6,9,15,0.82)}
+.nav-logo{display:flex;align-items:center;gap:.6rem;text-decoration:none}
+.nav-logo svg{width:32px;height:32px}
+.nav-logo span{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1.15rem;color:#fff;letter-spacing:-.02em}
+.nav-links{display:flex;align-items:center;gap:2rem;list-style:none}
+.nav-links a{color:rgba(255,255,255,.72);text-decoration:none;font-size:.92rem;font-weight:500;transition:color .2s}
+.nav-links a:hover{color:#fff}
+.nav-right{display:flex;align-items:center;gap:.9rem}
+.lang-switch{
+  display:flex;align-items:center;gap:.45rem;cursor:pointer;
+  font-size:.78rem;font-weight:600;letter-spacing:.05em;
+}
+.ls-label{color:rgba(255,255,255,.38);transition:color .25s;user-select:none}
+[data-lang="es"] .ls-label.ls-es{color:#fff}
+[data-lang="en"] .ls-label.ls-en{color:#fff}
+.ls-track{
+  width:40px;height:22px;border-radius:11px;
+  background:rgba(21,164,236,.15);border:1px solid rgba(21,164,236,.38);
+  position:relative;transition:background .25s;flex-shrink:0;
+}
+[data-lang="en"] .ls-track{background:rgba(21,164,236,.32)}
+.ls-thumb{
+  position:absolute;top:3px;left:3px;width:14px;height:14px;
+  border-radius:50%;background:#15A4EC;
+  box-shadow:0 0 6px rgba(21,164,236,.5);
+  transition:transform .28s cubic-bezier(.16,1,.3,1);
+}
+.btn-demo{
+  background:linear-gradient(135deg,#15A4EC,#29ABE2);
+  color:#fff;border:none;padding:.48rem 1.2rem;border-radius:8px;
+  font-size:.9rem;font-weight:600;cursor:pointer;
+  font-family:'Inter',sans-serif;
+  transition:opacity .2s,transform .18s;
+  text-decoration:none;display:inline-flex;align-items:center;gap:.4rem;
+}
+.btn-demo:hover{opacity:.88;transform:translateY(-1px)}
+/* ─── LANGUAGE ─── */
+[data-lang="es"] .en{display:none!important}
+[data-lang="en"] .es{display:none!important}
+/* ─── SECTIONS BASE ─── */
+section{position:relative;z-index:1}
+.container{max-width:1360px;margin:0 auto;padding:0 4%}
+/* ─── HERO ─── */
+#hero{
+  min-height:100vh;display:flex;align-items:center;
+  padding-top:80px;overflow:hidden;
+}
+.hero-inner{
+  display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center;
+  width:100%;max-width:1360px;margin:0 auto;padding:0 4%;
+}
+.hero-tag{
+  display:inline-flex;align-items:center;gap:.5rem;
+  background:rgba(21,164,236,.12);border:1px solid rgba(21,164,236,.28);
+  color:#68C5ED;font-size:.8rem;font-weight:600;letter-spacing:.06em;
+  text-transform:uppercase;padding:.32rem .9rem;border-radius:100px;
+  margin-bottom:1.6rem;
+}
+.hero-tag span{width:7px;height:7px;border-radius:50%;background:#15A4EC;box-shadow:0 0 8px rgba(21,164,236,.7);animation:pulse 3s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+.hero-h1{
+  font-family:'Space Grotesk',sans-serif;
+  font-size:clamp(2rem,3.4vw,3rem);
+  font-weight:700;line-height:1.08;letter-spacing:-.03em;color:#fff;
+  margin-bottom:1.5rem;
+}
+.hl-wrap{overflow:hidden;display:block}
+.hl-w{
+  display:block;transform:translateY(108%);opacity:0;
+  animation:wu .85s var(--ease) forwards;
+}
+.hl-w.a1{animation-delay:.18s}
+.hl-w.a2{animation-delay:.34s}
+.hl-w.a3{animation-delay:.50s}
+.hl-w.a4{animation-delay:.66s}
+@keyframes wu{to{transform:translateY(0);opacity:1}}
+.grad{background:linear-gradient(135deg,#68C5ED,#15A4EC,#29ABE2);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-p{color:rgba(255,255,255,.62);font-size:1.05rem;line-height:1.7;margin-bottom:2rem;max-width:520px}
+.hero-ctas{display:flex;gap:1rem;flex-wrap:wrap;align-items:center}
+.btn-primary{
+  background:linear-gradient(135deg,#15A4EC,#29ABE2);
+  color:#fff;border:none;padding:.7rem 1.8rem;border-radius:10px;
+  font-size:1rem;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;
+  transition:transform .2s,box-shadow .2s;
+  box-shadow:0 4px 24px rgba(21,164,236,.35);
+  text-decoration:none;display:inline-flex;align-items:center;gap:.5rem;
+}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(21,164,236,.5)}
+.btn-ghost{
+  background:none;border:1px solid rgba(255,255,255,.22);
+  color:rgba(255,255,255,.8);padding:.7rem 1.6rem;border-radius:10px;
+  font-size:1rem;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif;
+  transition:all .2s;text-decoration:none;display:inline-flex;align-items:center;gap:.5rem;
+}
+.btn-ghost:hover{border-color:rgba(255,255,255,.5);color:#fff;background:rgba(255,255,255,.06)}
+.hero-meta{display:flex;gap:1.6rem;margin-top:2.4rem;flex-wrap:wrap}
+.hero-stat{display:flex;flex-direction:column}
+.hero-stat strong{font-size:1.6rem;font-weight:700;color:#15A4EC;font-family:'Space Grotesk',sans-serif}
+.hero-stat span{font-size:.8rem;color:rgba(255,255,255,.45);margin-top:.1rem}
+.hero-visual{position:relative;display:flex;justify-content:center;align-items:center}
+#hero-grid{
+  position:absolute;inset:-60px;opacity:.18;
+  background-image:linear-gradient(rgba(21,164,236,.4) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(21,164,236,.4) 1px,transparent 1px);
+  background-size:40px 40px;
+  mask-image:radial-gradient(ellipse at center,black 30%,transparent 75%);
+  pointer-events:none;will-change:transform;
+}
+.hero-device{
+  width:100%;max-width:460px;position:relative;z-index:2;
+  will-change:transform;
+  filter:drop-shadow(0 30px 60px rgba(21,164,236,.22));
+}
+.device-frame{
+  background:rgba(8,13,22,.82);border:1px solid rgba(21,164,236,.25);
+  border-radius:16px;overflow:hidden;
+  backdrop-filter:blur(20px);
+}
+.device-bar{
+  background:rgba(21,164,236,.08);padding:.6rem 1rem;
+  display:flex;align-items:center;gap:.5rem;
+  border-bottom:1px solid rgba(21,164,236,.12);
+}
+.device-dot{width:10px;height:10px;border-radius:50%}
+.d1{background:#ff5f57}.d2{background:#febc2e}.d3{background:#28c840}
+.device-url{
+  flex:1;background:rgba(255,255,255,.06);border-radius:4px;
+  padding:.2rem .6rem;font-family:'JetBrains Mono',monospace;
+  font-size:.72rem;color:rgba(255,255,255,.4);
+}
+.device-body{padding:1.2rem}
+.db-row{display:flex;align-items:center;gap:.6rem;margin-bottom:.7rem}
+.db-icon{
+  width:32px;height:32px;border-radius:8px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:.85rem;
+}
+.db-label{font-size:.8rem;color:rgba(255,255,255,.6);flex:1}
+.db-bar{height:5px;border-radius:3px;background:rgba(21,164,236,.15);overflow:hidden;margin-top:.2rem}
+.db-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,#15A4EC,#68C5ED);animation:fillAnim 2.5s ease-in-out infinite alternate}
+@keyframes fillAnim{from{width:30%}to{width:95%}}
+.db-badge{
+  font-size:.68rem;font-weight:600;padding:.18rem .5rem;border-radius:4px;
+  background:rgba(21,164,236,.18);color:#68C5ED;font-family:'JetBrains Mono',monospace;
+}
+.device-chart{
+  background:rgba(21,164,236,.04);border:1px solid rgba(21,164,236,.1);
+  border-radius:8px;padding:.8rem;margin-top:.6rem;
+}
+.chart-bars{display:flex;align-items:flex-end;gap:4px;height:48px}
+.cb{flex:1;border-radius:3px 3px 0 0;background:linear-gradient(to top,#15A4EC,#68C5ED);opacity:.7;animation:cbAnim 3s ease-in-out infinite alternate}
+.cb:nth-child(1){height:60%;animation-delay:.1s}
+.cb:nth-child(2){height:80%;animation-delay:.2s}
+.cb:nth-child(3){height:45%;animation-delay:.3s}
+.cb:nth-child(4){height:90%;animation-delay:.4s}
+.cb:nth-child(5){height:55%;animation-delay:.5s}
+.cb:nth-child(6){height:70%;animation-delay:.6s}
+.cb:nth-child(7){height:85%;animation-delay:.7s}
+@keyframes cbAnim{0%{opacity:.5;transform:scaleY(.9)}100%{opacity:.9;transform:scaleY(1)}}
+.chart-label{font-size:.7rem;color:rgba(255,255,255,.35);margin-top:.4rem;text-align:right;font-family:'JetBrains Mono',monospace}
+/* ─── MARQUEE ─── */
+.mq-strip{
+  padding:.9rem 0;overflow:hidden;
+  border-top:1px solid rgba(21,164,236,.1);
+  border-bottom:1px solid rgba(21,164,236,.1);
+  background:rgba(6,9,15,.5);
+  position:relative;z-index:2;
+}
+.mq-strip.rev{background:rgba(8,11,18,.6)}
+.mq-track{
+  display:flex;gap:2.4rem;width:max-content;
+  animation:mqScroll 30s linear infinite;
+  white-space:nowrap;
+}
+.mq-strip.rev .mq-track{animation-direction:reverse;animation-duration:36s}
+.mq-item{
+  display:flex;align-items:center;gap:.6rem;
+  font-size:.82rem;font-weight:500;color:rgba(255,255,255,.42);
+  letter-spacing:.04em;text-transform:uppercase;
+}
+.mq-item svg,.mq-item span.dot{
+  width:16px;height:16px;color:#15A4EC;flex-shrink:0;
+}
+span.dot{width:5px;height:5px;border-radius:50%;background:#15A4EC;display:inline-block}
+@keyframes mqScroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+/* ─── SECTION HEADINGS ─── */
+.sec-tag{
+  display:inline-block;font-size:.75rem;font-weight:600;letter-spacing:.1em;
+  text-transform:uppercase;color:#15A4EC;margin-bottom:.8rem;
+}
+.sec-h2{
+  font-family:'Space Grotesk',sans-serif;
+  font-size:clamp(1.9rem,3.5vw,2.8rem);
+  font-weight:700;letter-spacing:-.025em;color:#fff;
+  line-height:1.12;margin-bottom:1rem;
+}
+.sec-p{color:rgba(255,255,255,.55);font-size:1.02rem;line-height:1.72;max-width:560px}
+.text-center{text-align:center}
+.text-center .sec-p{margin:0 auto}
+/* ─── REVEAL ANIMATIONS ─── */
+.rv,.rvl,.rvr{opacity:0;transition:opacity .8s var(--ease),transform .8s var(--ease)}
+.rv{transform:translateY(42px)}
+.rvl{transform:translateX(-48px)}
+.rvr{transform:translateX(48px)}
+.rv.visible,.rvl.visible,.rvr.visible{opacity:1;transform:none}
+/* ─── PROBLEM ─── */
+#problem{padding:7rem 0 5rem}
+.problem-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-top:3.5rem;
+}
+.prob-card{
+  background:rgba(8,13,22,.72);border:1px solid rgba(255,255,255,.07);
+  border-radius:16px;padding:2rem;backdrop-filter:blur(16px);
+  transition:border-color .3s,transform .3s;position:relative;overflow:hidden;
+}
+.prob-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,rgba(21,164,236,.4),transparent);
+  opacity:0;transition:opacity .3s;
+}
+.prob-card:hover{border-color:rgba(21,164,236,.22);transform:translateY(-3px)}
+.prob-card:hover::before{opacity:1}
+.prob-icon{
+  width:48px;height:48px;border-radius:12px;margin-bottom:1.2rem;
+  display:flex;align-items:center;justify-content:center;font-size:1.4rem;
+  background:rgba(21,164,236,.1);border:1px solid rgba(21,164,236,.2);
+}
+.prob-card h3{
+  font-family:'Space Grotesk',sans-serif;font-size:1.05rem;font-weight:600;
+  color:#fff;margin-bottom:.5rem;
+}
+.prob-card p{font-size:.92rem;color:rgba(255,255,255,.5);line-height:1.65}
+/* ─── BRIDGE ─── */
+#bridge{
+  padding:8rem 0;text-align:center;
+  background:linear-gradient(180deg,transparent,rgba(21,164,236,.04),transparent);
+}
+.bridge-quote{
+  font-family:'Space Grotesk',sans-serif;
+  font-size:clamp(1.6rem,3vw,2.4rem);
+  font-weight:600;color:#fff;line-height:1.3;
+  max-width:760px;margin:0 auto;
+  letter-spacing:-.02em;
+}
+.bridge-quote em{
+  font-style:normal;
+  background:linear-gradient(135deg,#68C5ED,#15A4EC);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.bridge-line{
+  width:1px;height:80px;background:linear-gradient(180deg,rgba(21,164,236,.6),transparent);
+  margin:2.5rem auto;
+}
+/* ─── SOLUTION ─── */
+#solution{padding:6rem 0}
+.sol-flow{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:1px;
+  background:rgba(21,164,236,.1);border-radius:16px;overflow:hidden;margin-top:3.5rem;
+}
+.sol-step{
+  background:rgba(6,9,15,.9);padding:2rem 1.5rem;position:relative;
+  transition:background .3s;text-align:center;
+}
+.sol-step:hover{background:rgba(21,164,236,.06)}
+.sol-num{
+  font-family:'JetBrains Mono',monospace;font-size:.72rem;color:#15A4EC;
+  margin-bottom:1rem;letter-spacing:.08em;opacity:.7;
+}
+.sol-icon{font-size:2rem;margin-bottom:.8rem}
+.sol-step h3{font-family:'Space Grotesk',sans-serif;font-size:1rem;font-weight:600;color:#fff;margin-bottom:.5rem}
+.sol-step p{font-size:.85rem;color:rgba(255,255,255,.48);line-height:1.6}
+.sol-arrow{
+  position:absolute;right:-8px;top:50%;transform:translateY(-50%);
+  z-index:2;color:#15A4EC;opacity:.5;font-size:1rem;
+}
+.sol-step:last-child .sol-arrow{display:none}
+/* ─── PLATFORM TABS ─── */
+#platform{padding:7rem 0}
+.tab-nav{
+  display:grid;grid-template-columns:1fr 1fr;gap:1rem;
+  margin:2.5rem 0 2.5rem;width:100%;
+}
+.tab-btn{
+  display:flex;align-items:center;gap:1.2rem;
+  padding:1.3rem 1.6rem;border-radius:16px;
+  border:1px solid rgba(21,164,236,.15);
+  background:rgba(8,13,22,.65);
+  color:rgba(255,255,255,.65);
+  font-family:'Inter',sans-serif;cursor:pointer;
+  transition:all .25s var(--ease2);text-align:left;
+  position:relative;overflow:hidden;
+}
+.tab-btn::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(21,164,236,.07),rgba(41,171,226,.03));
+  opacity:0;transition:opacity .25s;
+}
+.tab-btn:hover{border-color:rgba(21,164,236,.35);transform:translateY(-2px)}
+.tab-btn:hover::before{opacity:1}
+.tab-btn.active{
+  border-color:rgba(21,164,236,.55);
+  background:rgba(21,164,236,.09);
+  color:#fff;transform:none;
+}
+.tab-btn.active::before{opacity:1}
+.tab-btn-icon{
+  width:52px;height:52px;flex-shrink:0;border-radius:14px;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(21,164,236,.1);border:1px solid rgba(21,164,236,.18);
+  transition:background .25s,border-color .25s;
+  position:relative;z-index:1;
+}
+.tab-btn.active .tab-btn-icon{
+  background:rgba(21,164,236,.22);border-color:rgba(21,164,236,.4);
+}
+.tab-btn-icon svg{stroke:rgba(21,164,236,.8)}
+.tab-btn.active .tab-btn-icon svg{stroke:#15A4EC}
+.tab-btn-body{flex:1;display:flex;flex-direction:column;gap:.3rem;position:relative;z-index:1}
+.tab-btn-body strong{
+  font-size:1rem;font-weight:600;
+  font-family:'Space Grotesk',sans-serif;letter-spacing:-.01em;
+  display:block;
+}
+.tab-btn-desc{
+  font-size:.82rem;line-height:1.45;
+  color:rgba(255,255,255,.45);transition:color .25s;
+}
+.tab-btn.active .tab-btn-desc{color:rgba(255,255,255,.68)}
+.tab-btn-badge{
+  display:inline-flex;align-items:center;gap:.35rem;
+  font-size:.72rem;font-weight:600;letter-spacing:.04em;
+  color:#15A4EC;margin-top:.15rem;opacity:.7;
+  transition:opacity .25s;position:relative;z-index:1;
+}
+.tab-btn.active .tab-btn-badge{opacity:1}
+.tab-btn-badge svg{width:11px;height:11px;stroke:#15A4EC;transition:transform .25s}
+.tab-btn.active .tab-btn-badge svg{transform:translateX(3px)}
+.tab-panel{display:none}
+.tab-panel.active{display:grid}
+.feat-grid{
+  grid-template-columns:repeat(3,1fr);gap:1.4rem;
+}
+.feat-card{
+  background:rgba(8,13,22,.72);border:1px solid rgba(255,255,255,.07);
+  border-radius:14px;padding:1.6rem;backdrop-filter:blur(12px);
+  transition:border-color .3s,transform .3s;
+}
+.feat-card:hover{border-color:rgba(21,164,236,.28);transform:translateY(-3px)}
+.feat-icon{
+  width:42px;height:42px;border-radius:10px;margin-bottom:1rem;
+  display:flex;align-items:center;justify-content:center;font-size:1.3rem;
+  background:rgba(21,164,236,.1);
+}
+.feat-card h4{font-family:'Space Grotesk',sans-serif;font-size:.97rem;font-weight:600;color:#fff;margin-bottom:.4rem}
+.feat-card p{font-size:.86rem;color:rgba(255,255,255,.48);line-height:1.6}
+/* ─── GOVERNANCE ─── */
+#governance{padding:5rem 0}
+.gov-strip{
+  background:rgba(8,13,22,.8);border:1px solid rgba(21,164,236,.15);
+  border-radius:20px;padding:3.5rem;
+  display:grid;grid-template-columns:1fr 1fr;gap:3.5rem;align-items:start;
+  backdrop-filter:blur(20px);
+  position:relative;overflow:hidden;
+}
+.gov-strip::before{
+  content:'';position:absolute;top:-80px;right:-80px;width:300px;height:300px;
+  background:radial-gradient(circle,rgba(21,164,236,.12),transparent 70%);
+  pointer-events:none;
+}
+.gov-list{list-style:none;margin-top:1.5rem}
+.gov-list li{
+  display:flex;align-items:flex-start;gap:.8rem;padding:.7rem 0;
+  border-bottom:1px solid rgba(255,255,255,.05);font-size:.93rem;
+  color:rgba(255,255,255,.65);
+}
+.gov-list li:last-child{border-bottom:none}
+.gov-check{
+  width:20px;height:20px;border-radius:50%;background:rgba(21,164,236,.15);
+  border:1px solid rgba(21,164,236,.35);flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;margin-top:2px;
+}
+.gov-check svg{width:10px;height:10px;color:#15A4EC}
+/* Compliance certs grid */
+.gov-right{display:flex;flex-direction:column;gap:1.4rem}
+.gov-certs{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}
+.gov-cert{
+  background:rgba(6,9,15,.65);border:1px solid rgba(21,164,236,.14);
+  border-radius:12px;padding:1rem 1.1rem;
+  display:flex;align-items:center;gap:.75rem;
+  transition:border-color .3s,background .3s;
+}
+.gov-cert:hover{border-color:rgba(21,164,236,.35);background:rgba(21,164,236,.07)}
+.gov-cert-icon{
+  width:36px;height:36px;border-radius:9px;
+  background:rgba(21,164,236,.12);border:1px solid rgba(21,164,236,.22);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1rem;flex-shrink:0;
+}
+.gov-cert-body strong{display:block;font-size:.85rem;font-weight:700;color:#fff;font-family:'Space Grotesk',sans-serif}
+.gov-cert-body span{font-size:.72rem;color:#68C5ED;letter-spacing:.04em}
+/* Audit log */
+.gov-auditlog{
+  background:rgba(4,7,14,.7);border:1px solid rgba(21,164,236,.13);
+  border-radius:12px;overflow:hidden;
+}
+.gov-auditlog-header{
+  display:flex;align-items:center;gap:.5rem;
+  padding:.7rem 1rem;border-bottom:1px solid rgba(21,164,236,.1);
+  background:rgba(21,164,236,.05);
+}
+.gov-live-dot{
+  width:7px;height:7px;border-radius:50%;background:#15A4EC;
+  box-shadow:0 0 6px rgba(21,164,236,.7);
+  animation:pulse 2s ease-in-out infinite;flex-shrink:0;
+}
+.gov-auditlog-header span{font-size:.73rem;font-weight:600;color:rgba(255,255,255,.5);letter-spacing:.05em;text-transform:uppercase}
+.gov-auditlog-feed{padding:.5rem 0;max-height:148px;overflow:hidden}
+.gov-log-entry{
+  display:flex;align-items:baseline;gap:.6rem;
+  padding:.38rem 1rem;font-family:'JetBrains Mono',monospace;font-size:.72rem;
+  border-bottom:1px solid rgba(255,255,255,.03);
+  animation:logFadeIn .4s ease forwards;
+}
+@keyframes logFadeIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.log-time{color:rgba(21,164,236,.55);flex-shrink:0}
+.log-user{color:#68C5ED;flex-shrink:0}
+.log-action{color:rgba(255,255,255,.42);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* ─── INDUSTRIES ─── */
+#industries{padding:6rem 0}
+.ind-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem;margin-top:3rem;
+}
+.ind-card{
+  background:rgba(8,13,22,.65);border:1px solid rgba(255,255,255,.07);
+  border-radius:14px;padding:1.8rem;backdrop-filter:blur(12px);
+  transition:all .3s;cursor:default;
+}
+.ind-card:hover{
+  border-color:rgba(21,164,236,.3);
+  background:rgba(21,164,236,.06);
+  transform:translateY(-3px);
+}
+.ind-emoji{font-size:2rem;margin-bottom:.8rem}
+.ind-card h4{font-family:'Space Grotesk',sans-serif;font-size:1rem;font-weight:600;color:#fff;margin-bottom:.4rem}
+.ind-card p{font-size:.86rem;color:rgba(255,255,255,.45);line-height:1.6}
+/* ─── CTA MID ─── */
+#cta-mid{
+  padding:6rem 0;text-align:center;
+  background:linear-gradient(180deg,transparent,rgba(21,164,236,.05),transparent);
+}
+.cta-mid-inner{
+  max-width:700px;margin:0 auto;
+}
+/* ─── PRICING ─── */
+#pricing{padding:8rem 0}
+.price-toggle-wrap{display:flex;align-items:center;justify-content:center;gap:.9rem;margin:2rem 0 3rem}
+.pt-label{font-size:.9rem;color:rgba(255,255,255,.45);font-weight:500}
+.pt-label.active{color:#fff}
+.pt-track{
+  width:46px;height:26px;border-radius:13px;cursor:pointer;
+  background:rgba(21,164,236,.18);border:1px solid rgba(21,164,236,.38);
+  position:relative;transition:background .25s;flex-shrink:0;
+}
+.pt-track.annual-on{background:rgba(21,164,236,.38)}
+.pt-thumb{
+  position:absolute;top:4px;left:4px;width:16px;height:16px;
+  border-radius:50%;background:#15A4EC;
+  box-shadow:0 0 8px rgba(21,164,236,.6);
+  transition:transform .3s cubic-bezier(.16,1,.3,1);
+}
+.pt-track.annual-on .pt-thumb{transform:translateX(20px)}
+.pt-save{
+  font-size:.72rem;font-weight:700;letter-spacing:.04em;
+  background:rgba(21,164,236,.18);border:1px solid rgba(21,164,236,.3);
+  color:#68C5ED;padding:.18rem .55rem;border-radius:20px;
+}
+.pricing-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:1.6rem;
+}
+.price-card{
+  background:rgba(8,13,22,.72);border:1px solid rgba(255,255,255,.08);
+  border-radius:20px;padding:2.4rem 2rem;backdrop-filter:blur(16px);
+  position:relative;transition:transform .3s,border-color .3s,box-shadow .3s;
+  display:flex;flex-direction:column;
+}
+.price-card:hover{transform:translateY(-5px);border-color:rgba(21,164,236,.28);box-shadow:0 20px 48px rgba(0,0,0,.3)}
+.price-card.featured{
+  border-color:rgba(21,164,236,.5);
+  background:linear-gradient(160deg,rgba(21,164,236,.1),rgba(8,13,22,.85));
+  box-shadow:0 0 0 1px rgba(21,164,236,.18),0 24px 64px rgba(21,164,236,.12);
+}
+.price-badge{
+  position:absolute;top:-1px;left:50%;transform:translateX(-50%);
+  background:linear-gradient(135deg,#15A4EC,#29ABE2);
+  color:#fff;font-size:.7rem;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;padding:.3rem 1rem;border-radius:0 0 10px 10px;
+}
+.price-tier{font-size:.76rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#68C5ED;margin-bottom:1rem}
+.price-amount{
+  font-family:'Space Grotesk',sans-serif;font-size:3rem;font-weight:700;color:#fff;
+  letter-spacing:-.03em;margin-bottom:.3rem;line-height:1;
+  display:flex;align-items:flex-start;gap:.1rem;
+}
+.price-amount sup{font-size:1.4rem;margin-top:.4rem}
+.price-amount .pa-num{transition:opacity .2s}
+.price-period{font-size:1rem;color:rgba(255,255,255,.32);font-weight:400;align-self:flex-end;margin-bottom:.2rem}
+.price-desc{font-size:.87rem;color:rgba(255,255,255,.42);margin-bottom:1.6rem;line-height:1.55;margin-top:.4rem}
+.price-divider{height:1px;background:rgba(255,255,255,.07);margin:1.4rem 0}
+.price-features{list-style:none;flex:1}
+.price-features li{
+  display:flex;align-items:flex-start;gap:.65rem;font-size:.88rem;
+  color:rgba(255,255,255,.62);padding:.45rem 0;line-height:1.45;
+}
+.pf-check{width:16px;height:16px;flex-shrink:0;color:#15A4EC;margin-top:2px}
+.price-cta{
+  margin-top:2rem;width:100%;padding:.75rem;border-radius:10px;
+  border:1px solid rgba(21,164,236,.32);background:none;
+  color:#68C5ED;font-size:.92rem;font-weight:600;cursor:pointer;
+  font-family:'Inter',sans-serif;transition:all .22s;letter-spacing:.01em;
+}
+.price-cta:hover,.price-card.featured .price-cta{
+  background:linear-gradient(135deg,#15A4EC,#29ABE2);
+  border-color:transparent;color:#fff;
+  box-shadow:0 6px 20px rgba(21,164,236,.3);
+}
+/* ─── FAQ ─── */
+#faq{padding:7rem 0}
+.faq-list{max-width:800px;margin:3rem auto 0}
+.faq-item{
+  border-bottom:1px solid rgba(255,255,255,.07);
+}
+.faq-q{
+  width:100%;background:none;border:none;color:#fff;
+  font-size:1rem;font-weight:500;text-align:left;padding:1.4rem 0;
+  cursor:pointer;font-family:'Inter',sans-serif;
+  display:flex;justify-content:space-between;align-items:center;gap:1rem;
+  transition:color .2s;
+}
+.faq-q:hover{color:#68C5ED}
+.faq-icon{
+  width:22px;height:22px;border-radius:50%;border:1px solid rgba(21,164,236,.35);
+  flex-shrink:0;display:flex;align-items:center;justify-content:center;
+  color:#15A4EC;font-size:.8rem;transition:transform .3s,background .2s;
+}
+.faq-item.open .faq-icon{transform:rotate(45deg);background:rgba(21,164,236,.15)}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .45s var(--ease)}
+.faq-a-inner{padding-bottom:1.2rem;color:rgba(255,255,255,.55);font-size:.95rem;line-height:1.72}
+/* ─── CTA FINAL ─── */
+#cta-final{
+  padding:8rem 0;text-align:center;
+  background:linear-gradient(180deg,transparent,rgba(21,164,236,.06),transparent);
+}
+.cta-glow{
+  width:480px;height:280px;position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  background:radial-gradient(ellipse,rgba(21,164,236,.18),transparent 70%);
+  pointer-events:none;z-index:0;
+}
+#cta-final .container{position:relative;z-index:1}
+/* ─── FOOTER ─── */
+footer{
+  padding:4rem 0 2rem;
+  border-top:1px solid rgba(255,255,255,.07);
+  position:relative;z-index:1;
+}
+.footer-top{
+  display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:3rem;margin-bottom:3rem;
+}
+.footer-brand p{font-size:.9rem;color:rgba(255,255,255,.42);line-height:1.65;margin:.8rem 0 1.2rem}
+.social-links{display:flex;gap:.7rem}
+.social-link{
+  width:36px;height:36px;border-radius:8px;border:1px solid rgba(255,255,255,.1);
+  display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.45);
+  text-decoration:none;transition:all .2s;font-size:.9rem;
+}
+.social-link:hover{border-color:#15A4EC;color:#15A4EC;background:rgba(21,164,236,.1)}
+.footer-col h5{font-size:.85rem;font-weight:600;color:#fff;margin-bottom:1rem;letter-spacing:.04em;text-transform:uppercase}
+.footer-col ul{list-style:none}
+.footer-col ul li{margin-bottom:.55rem}
+.footer-col ul li a{font-size:.88rem;color:rgba(255,255,255,.42);text-decoration:none;transition:color .2s}
+.footer-col ul li a:hover{color:#fff}
+.footer-bottom{
+  border-top:1px solid rgba(255,255,255,.06);padding-top:1.5rem;
+  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;
+}
+.footer-bottom p{font-size:.82rem;color:rgba(255,255,255,.28)}
+.footer-bottom a{color:rgba(255,255,255,.4);text-decoration:none;transition:color .2s}
+.footer-bottom a:hover{color:#fff}
+/* ─── MODAL ─── */
+.modal-overlay{
+  position:fixed;inset:0;z-index:200;
+  background:rgba(4,7,14,.85);backdrop-filter:blur(12px);
+  display:flex;align-items:center;justify-content:center;padding:1.5rem;
+  opacity:0;pointer-events:none;transition:opacity .3s;
+}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal{
+  background:rgba(8,13,22,.95);border:1px solid rgba(21,164,236,.2);
+  border-radius:20px;padding:2.5rem;width:100%;max-width:540px;
+  position:relative;transform:translateY(24px);transition:transform .35s var(--ease);
+}
+.modal-overlay.open .modal{transform:translateY(0)}
+.modal-close{
+  position:absolute;top:1.2rem;right:1.2rem;width:32px;height:32px;
+  border-radius:8px;border:1px solid rgba(255,255,255,.12);background:none;
+  color:rgba(255,255,255,.5);cursor:pointer;font-size:1rem;
+  display:flex;align-items:center;justify-content:center;transition:all .2s;
+}
+.modal-close:hover{border-color:rgba(255,255,255,.3);color:#fff}
+.modal h2{font-family:'Space Grotesk',sans-serif;font-size:1.5rem;font-weight:700;color:#fff;margin-bottom:.4rem}
+.modal p{font-size:.93rem;color:rgba(255,255,255,.5);margin-bottom:1.8rem;line-height:1.6}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.form-group{margin-bottom:1.1rem}
+.form-group label{display:block;font-size:.82rem;font-weight:500;color:rgba(255,255,255,.55);margin-bottom:.4rem}
+.form-group input,.form-group select,.form-group textarea{
+  width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);
+  border-radius:9px;padding:.7rem 1rem;color:#fff;font-size:.93rem;font-family:'Inter',sans-serif;
+  transition:border-color .2s;outline:none;
+}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:#15A4EC}
+.form-group select option{background:#0d1520;color:#fff}
+.form-group textarea{resize:vertical;min-height:90px}
+.form-submit{
+  width:100%;padding:.75rem;border-radius:10px;border:none;
+  background:linear-gradient(135deg,#15A4EC,#29ABE2);
+  color:#fff;font-size:1rem;font-weight:600;cursor:pointer;
+  font-family:'Inter',sans-serif;margin-top:.4rem;
+  transition:opacity .2s,transform .2s;
+}
+.form-submit:hover{opacity:.88;transform:translateY(-1px)}
+/* ─── RESPONSIVE ─── */
+@media(max-width:1024px){
+  .pricing-grid{grid-template-columns:repeat(2,1fr)}
+  .footer-top{grid-template-columns:1fr 1fr}
+  .sol-flow{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:768px){
+  .hero-inner{grid-template-columns:1fr;text-align:center}
+  .hero-visual{display:none}
+  .hero-ctas,.hero-meta{justify-content:center}
+  .nav-links{display:none}
+  .problem-grid,.feat-grid,.ind-grid{grid-template-columns:1fr}
+  .gov-strip{grid-template-columns:1fr}
+  .pricing-grid{grid-template-columns:1fr}
+  .footer-top{grid-template-columns:1fr}
+  .form-row{grid-template-columns:1fr}
+  .sol-flow{grid-template-columns:1fr}
+  .tab-nav{grid-template-columns:1fr}
+  .tab-btn{padding:1rem 1.2rem}
+  .tab-btn-icon{width:44px;height:44px}
+}
+/* ─── PARTNERS ─── */
+.partners-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:1.8rem;margin-top:3rem;
+}
+.partner-card{
+  background:rgba(8,13,22,.75);border:1px solid rgba(21,164,236,.18);
+  border-radius:18px;padding:2rem;backdrop-filter:blur(16px);
+  display:flex;gap:1.6rem;align-items:flex-start;
+  transition:border-color .3s,transform .3s;
+}
+.partner-card:hover{border-color:rgba(21,164,236,.4);transform:translateY(-3px)}
+.partner-logo{
+  width:72px;height:72px;flex-shrink:0;border-radius:12px;
+  background:rgba(21,164,236,.12);border:1px solid rgba(21,164,236,.25);
+  display:flex;align-items:center;justify-content:center;text-align:center;padding:.4rem;
+}
+.partner-body h4{font-family:'Space Grotesk',sans-serif;font-size:1.05rem;font-weight:600;color:#fff;margin-bottom:.5rem}
+.partner-body p{font-size:.88rem;color:rgba(255,255,255,.5);line-height:1.65;margin-bottom:.8rem}
+.partner-tag{
+  display:inline-block;font-size:.74rem;font-weight:600;letter-spacing:.06em;
+  text-transform:uppercase;color:#15A4EC;background:rgba(21,164,236,.1);
+  border:1px solid rgba(21,164,236,.25);padding:.2rem .65rem;border-radius:100px;
+}
+@media(max-width:768px){.partners-grid{grid-template-columns:1fr}.partner-card{flex-direction:column}}
+</style>
+</head>
+<body>
+
+<canvas id="bg"></canvas>
+
+<!-- NAV -->
+<nav id="nav">
+  <a href="#hero" class="nav-logo">
+    <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="32" height="32" rx="8" fill="url(#ng)"/>
+      <path d="M8 16L14 10L20 16L26 10" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M8 22L14 16L20 22L26 16" stroke="rgba(255,255,255,0.5)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      <defs><linearGradient id="ng" x1="0" y1="0" x2="32" y2="32"><stop stop-color="#15A4EC"/><stop offset="1" stop-color="#68C5ED"/></linearGradient></defs>
+    </svg>
+    <span>AKI Collector</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#features" class="es">Características</a><a href="#features" class="en">Features</a></li>
+    <li><a href="#pricing" class="es">Precios</a><a href="#pricing" class="en">Pricing</a></li>
+    <li><a href="#faq" class="en">FAQ</a><a href="#faq" class="es">FAQ</a></li>
+  </ul>
+  <div class="nav-right">
+    <div class="lang-switch" id="langToggle" role="button" tabindex="0" aria-label="Toggle language">
+      <span class="ls-label ls-es">ES</span>
+      <div class="ls-track"><div class="ls-thumb"></div></div>
+      <span class="ls-label ls-en">EN</span>
+    </div>
+    <button class="btn-demo" onclick="openModal()">
+      <span class="es">Solicitar Demo</span>
+      <span class="en">Request Demo</span>
+    </button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div id="hero-grid"></div>
+  <div class="hero-inner">
+    <div class="hero-text">
+      <div class="hero-tag">
+        <span></span>
+        <span class="es">B2B SaaS · Data Structuring Layer</span>
+        <span class="en">B2B SaaS · Data Structuring Layer</span>
+      </div>
+      <h1 class="hero-h1">
+        <span class="hl-wrap"><span class="hl-w a1 es">Tus datos existen,</span><span class="hl-w a1 en">Your data exists,</span></span>
+        <span class="hl-wrap"><span class="hl-w a2 es">pero están atrapados en archivos.</span><span class="hl-w a2 en">but they're trapped in files.</span></span>
+        <span class="hl-wrap"><span class="hl-w a3 es"><span class="grad">AKI Collector los convierte en una</span></span><span class="hl-w a3 en"><span class="grad">AKI Collector turns them into a</span></span></span>
+        <span class="hl-wrap"><span class="hl-w a4 es">base de datos lista para usar.</span><span class="hl-w a4 en">database ready to use.</span></span>
+      </h1>
+      <p class="hero-p es">AKI Collector toma los datos que hoy viven en archivos o se capturan en terreno y los lleva a una base de datos: organizados, conectados y listos para ser utilizados por tus sistemas, equipos o modelos de IA.</p>
+      <p class="hero-p en">AKI Collector takes data that today lives in files or is captured in the field and moves it into a database: organized, connected and ready to be used by your systems, teams or AI models.</p>
+      <div class="hero-ctas">
+        <button class="btn-primary" onclick="openModal()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 3l14 9-14 9V3z"/></svg>
+          <span class="es">Ver AKI en acción</span><span class="en">See AKI in action</span>
+        </button>
+        <a href="#features" class="btn-ghost">
+          <span class="es">Explorar</span><span class="en">Explore</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M7 7h10v10"/></svg>
+        </a>
+      </div>
+      <div class="hero-meta">
+        <div class="hero-stat"><strong>10×</strong><span class="es">menos tiempo preparando datos</span><span class="en">less time preparing data</span></div>
+        <div class="hero-stat"><strong>100%</strong><span class="es">trazabilidad de cambios</span><span class="en">traceability of changes</span></div>
+        <div class="hero-stat"><strong>0</strong><span class="es">dependencia de consolidación manual</span><span class="en">manual consolidation dependency</span></div>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="hero-device" id="hero-vis">
+        <div class="device-frame">
+          <div class="device-bar">
+            <div class="device-dot d1"></div><div class="device-dot d2"></div><div class="device-dot d3"></div>
+            <div class="device-url">app.akicollector.io/dashboard</div>
+          </div>
+          <div class="device-body">
+            <div class="db-row">
+              <div class="db-icon" style="background:rgba(21,164,236,.15)">📊</div>
+              <div style="flex:1">
+                <div class="db-label es">Ventas_Q4.xlsx → estructurado</div>
+                <div class="db-label en">Sales_Q4.xlsx → structured</div>
+                <div class="db-bar"><div class="db-fill"></div></div>
+              </div>
+              <div class="db-badge">LIVE</div>
+            </div>
+            <div class="db-row">
+              <div class="db-icon" style="background:rgba(104,197,237,.1)">📋</div>
+              <div style="flex:1">
+                <div class="db-label es">Inventario.csv → validado</div>
+                <div class="db-label en">Inventory.csv → validated</div>
+                <div class="db-bar"><div class="db-fill" style="animation-delay:.8s"></div></div>
+              </div>
+              <div class="db-badge" style="background:rgba(40,200,100,.1);color:#4de08a">OK</div>
+            </div>
+            <div class="db-row">
+              <div class="db-icon" style="background:rgba(41,171,226,.1)">🔊</div>
+              <div style="flex:1">
+                <div class="db-label es">Registro por voz → convertido</div>
+                <div class="db-label en">Voice record → converted</div>
+                <div class="db-bar"><div class="db-fill" style="animation-delay:1.4s"></div></div>
+              </div>
+              <div class="db-badge" style="background:rgba(255,171,0,.1);color:#ffc248">AI</div>
+            </div>
+            <div class="device-chart">
+              <div class="chart-bars">
+                <div class="cb"></div><div class="cb"></div><div class="cb"></div>
+                <div class="cb"></div><div class="cb"></div><div class="cb"></div><div class="cb"></div>
+              </div>
+              <div class="chart-label es">Base de datos → actualizada</div>
+              <div class="chart-label en">Database → updated</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MARQUEE 1 -->
+<div class="mq-strip">
+  <div class="mq-track">
+    <div class="mq-item"><span class="dot"></span><span class="es">Base de Datos</span><span class="en">Database</span></div>
+    <div class="mq-item"><span class="dot"></span><span class="es">Data Structuring</span><span class="en">Data Structuring</span></div>
+    <div class="mq-item"><span class="dot"></span><span class="es">API REST</span><span class="en">REST API</span></div>
+    <div class="mq-item"><span class="dot"></span><span class="es">AI Ready</span><span class="en">AI Ready</span></div>
+    <div class="mq-item"><span class="dot"></span><span class="es">Excel · CSV</span><span class="en">Excel · CSV</span></div>
+    <div class="mq-item"><span class="dot"></span><span class="es">Sin Código</span><span class="en">No-Code</span></div>
+    <div class="mq-item"><span class="dot"></span><span class="es">Trazabilidad</span><span class="en">Traceability</span></div>
+    <div class="mq-item"><span class="dot"></span><span class="es">Gobierno del Dato</span><span class="en">Data Governance</span></div>
+    <div class="mq-item"><span class="dot"></span><span class="es">Base de Datos</span><span class="en">Database</span></div>
+    <div class="mq-item"><span class="dot"></span><span class="es">Data Structuring</span><span class="en">Data Structuring</span></div>
+    <div class="mq-item"><span class="dot"></span><span class="es">API REST</span><span class="en">REST API</span></div>
+    <div class="mq-item"><span class="dot"></span><span class="es">AI Ready</span><span class="en">AI Ready</span></div>
+    <div class="mq-item"><span class="dot"></span><span class="es">Excel · CSV</span><span class="en">Excel · CSV</span></div>
+    <div class="mq-item"><span class="dot"></span><span class="es">Sin Código</span><span class="en">No-Code</span></div>
+    <div class="mq-item"><span class="dot"></span><span class="es">Trazabilidad</span><span class="en">Traceability</span></div>
+    <div class="mq-item"><span class="dot"></span><span class="es">Gobierno del Dato</span><span class="en">Data Governance</span></div>
+  </div>
+</div>
+
+<!-- PROBLEM -->
+<section id="problem">
+  <div class="container">
+    <div class="rv">
+      <span class="sec-tag es">El Problema</span>
+      <span class="sec-tag en">The Problem</span>
+      <h2 class="sec-h2 es">Tus datos no están<br>donde deberían estar.</h2>
+      <h2 class="sec-h2 en">Your data is not<br>where it should be.</h2>
+    </div>
+    <div class="problem-grid">
+      <div class="prob-card rv" style="transition-delay:.08s">
+        <div class="prob-icon">📁</div>
+        <h3 class="es">Información fuera de tu base de datos</h3>
+        <h3 class="en">Information outside your database</h3>
+        <p class="es">Tus datos viven en archivos como Excel o CSV. Son útiles, pero no están en una base de datos, por lo que no pueden ser utilizados de forma confiable ni automatizada.</p>
+        <p class="en">Your data lives in files like Excel or CSV. Useful, but not in a database — so it can't be used reliably or automatically.</p>
+      </div>
+      <div class="prob-card rv" style="transition-delay:.16s">
+        <div class="prob-icon">🔍</div>
+        <h3 class="es">Sin control ni trazabilidad</h3>
+        <h3 class="en">No control or traceability</h3>
+        <p class="es">No hay registro claro de cambios. Técnicamente, no existe un historial auditable, lo que hace que los datos pierdan confiabilidad frente a cualquier auditoría o decisión.</p>
+        <p class="en">There is no clear record of changes. No auditable history exists, which makes data unreliable for any audit or decision-making process.</p>
+      </div>
+      <div class="prob-card rv" style="transition-delay:.24s">
+        <div class="prob-icon">⏱️</div>
+        <h3 class="es">Operación atrapada en tareas manuales</h3>
+        <h3 class="en">Constant manual work</h3>
+        <p class="es">Tus equipos de trabajo consolidan archivos manualmente. En lugar de analizar, están buscando y preparando datos que deberían existir en tu base de datos, listos para ser usados.</p>
+        <p class="en">Your teams manually consolidate files. Instead of analyzing, they are searching and preparing data that should already exist in your database, ready to use.</p>
+      </div>
+      <div class="prob-card rv" style="transition-delay:.32s">
+        <div class="prob-icon">📵</div>
+        <h3 class="es">La operación no se convierte en datos</h3>
+        <h3 class="en">Operations don't convert to data</h3>
+        <p class="es">Lo que ocurre en terreno o en la operación no se transforma en datos correctamente almacenados en tu base de datos. Queda en archivos, papel o sistemas aislados que no permiten análisis ni automatización.</p>
+        <p class="en">What happens in the field or in operations is not transformed into data correctly stored in your database. It stays in files, paper or isolated systems that don't allow analysis or automation.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BRIDGE -->
+<section id="bridge">
+  <div class="container">
+    <div class="bridge-line"></div>
+    <div class="rv">
+      <p class="bridge-quote es">El problema no es que no tengas datos.<br>Es que <em>no están almacenados en tu base de datos</em> para ser utilizados.</p>
+      <p class="bridge-quote en">The problem is not that you don't have data.<br>It's that <em>it's not stored in your database</em> to be used.</p>
+    </div>
+    <div class="bridge-line"></div>
+  </div>
+</section>
+
+<!-- SOLUTION FLOW -->
+<section id="solution">
+  <div class="container">
+    <div class="rv text-center">
+      <span class="sec-tag es">La Solución</span>
+      <span class="sec-tag en">The Solution</span>
+      <h2 class="sec-h2 es">De archivos a base de datos.<br>Sin cambiar cómo trabajas.</h2>
+      <h2 class="sec-h2 en">From files to database.<br>Without changing how you work.</h2>
+    </div>
+    <div class="sol-flow rv" style="transition-delay:.1s">
+      <div class="sol-step">
+        <div class="sol-num">01</div>
+        <div class="sol-icon">📤</div>
+        <h3 class="es">Ingresa</h3><h3 class="en">Ingest</h3>
+        <p class="es">Carga archivos Excel o CSV desde la web, o captura información desde móvil o voz. Mantienes tus procesos actuales.</p>
+        <p class="en">Upload Excel or CSV files from the web, or capture information from mobile or voice. You keep your current processes.</p>
+        <span class="sol-arrow">›</span>
+      </div>
+      <div class="sol-step">
+        <div class="sol-num">02</div>
+        <div class="sol-icon">⚙️</div>
+        <h3 class="es">Estructura</h3><h3 class="en">Structure</h3>
+        <p class="es">AKI Collector transforma esa información en datos organizados bajo un esquema consistente que permite que sean entendidos por otros sistemas y herramientas informáticas.</p>
+        <p class="en">AKI Collector transforms that information into data organized under a consistent schema that allows it to be understood by other systems and software tools.</p>
+        <span class="sol-arrow">›</span>
+      </div>
+      <div class="sol-step">
+        <div class="sol-num">03</div>
+        <div class="sol-icon">🗄️</div>
+        <h3 class="es">Centraliza</h3><h3 class="en">Centralize</h3>
+        <p class="es">Todos los datos se almacenan en una base de datos: un repositorio único donde la información queda conectada, ordenada y con historial completo.</p>
+        <p class="en">All data is stored in a database: a single repository where information is connected, ordered and with a complete history.</p>
+        <span class="sol-arrow">›</span>
+      </div>
+      <div class="sol-step">
+        <div class="sol-num">04</div>
+        <div class="sol-icon">📈</div>
+        <h3 class="es">Usa tus datos</h3><h3 class="en">Use your data</h3>
+        <p class="es">Accede a los datos mediante API REST, conexión directa o herramientas de BI. AKI Collector deja los datos listos para que tú los explotes.</p>
+        <p class="en">Access data via REST API, direct connection or BI tools. AKI Collector does not analyze: it leaves your data ready for you to use.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- PLATFORM FEATURES -->
+<section id="features" style="padding:7rem 0">
+  <div class="container">
+    <div class="rv text-center">
+      <span class="sec-tag es">Características</span>
+      <span class="sec-tag en">Features</span>
+      <h2 class="sec-h2 es">Captura como hoy.<br>Usa como nunca.</h2>
+      <h2 class="sec-h2 en">Capture as today.<br>Use like never before.</h2>
+      <p class="sec-p es">AKI Collector colecta datos desde archivos y terreno, y los convierte en una base de datos lista para ser utilizada.</p>
+      <p class="sec-p en">AKI Collector collects data from files and the field, and converts it into a database ready to be used.</p>
+    </div>
+    <div class="tab-nav rv">
+      <button class="tab-btn active" onclick="switchTab('web',this)">
+        <div class="tab-btn-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        </div>
+        <div class="tab-btn-body">
+          <strong><span class="es">Aplicación Web</span><span class="en">Web App</span></strong>
+          <span class="tab-btn-desc es">Importa archivos, modela esquemas y administra tu base de datos desde el navegador.</span>
+          <span class="tab-btn-desc en">Import files, model schemas and manage your database from any browser.</span>
+          <span class="tab-btn-badge">
+            <span class="es">Ver funciones</span><span class="en">See features</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </span>
+        </div>
+      </button>
+      <button class="tab-btn" onclick="switchTab('mobile',this)">
+        <div class="tab-btn-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke-width="1.8"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg>
+        </div>
+        <div class="tab-btn-body">
+          <strong><span class="es">App Móvil</span><span class="en">Mobile App</span></strong>
+          <span class="tab-btn-desc es">Captura datos en terreno por voz o formulario, con soporte offline.</span>
+          <span class="tab-btn-desc en">Capture field data by voice or form, with full offline support.</span>
+          <span class="tab-btn-badge">
+            <span class="es">Ver funciones</span><span class="en">See features</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </span>
+        </div>
+      </button>
+    </div>
+    <div id="tab-web" class="tab-panel active feat-grid">
+      <div class="feat-card rv" style="transition-delay:.05s">
+        <div class="feat-icon">📁</div>
+        <h4 class="es">Captura de Archivos</h4><h4 class="en">File Capture</h4>
+        <p class="es">Convierte archivos Excel o CSV en registros dentro de una base de datos, sin necesidad de preparación manual previa.</p>
+        <p class="en">Converts Excel or CSV files into records inside a database, without any prior manual preparation needed.</p>
+      </div>
+      <div class="feat-card rv" style="transition-delay:.1s">
+        <div class="feat-icon">🗂️</div>
+        <h4 class="es">Modelado de Datos</h4><h4 class="en">Data Modeling</h4>
+        <p class="es">Define la estructura que deben cumplir los datos (esquemas). Esto asegura consistencia en cada ingreso, sin depender de que el archivo llegue bien formado.</p>
+        <p class="en">Define the structure data must meet (schemas). This ensures consistency in every entry, without depending on the file arriving well-formed.</p>
+      </div>
+      <div class="feat-card rv" style="transition-delay:.15s">
+        <div class="feat-icon">🔍</div>
+        <h4 class="es">Auditoría Completa</h4><h4 class="en">Full Audit Trail</h4>
+        <p class="es">Cada dato tiene trazabilidad: quién lo creó, cuándo cambió, qué cambió y quién lo cambió. Esto es lo que se conoce como historial auditable y es requisito en operaciones críticas.</p>
+        <p class="en">Every data point has traceability: who created it, when it changed, what changed and who changed it. This is what is known as an auditable history — a requirement in critical operations.</p>
+      </div>
+      <div class="feat-card rv" style="transition-delay:.2s">
+        <div class="feat-icon">🔗</div>
+        <h4 class="es">API REST</h4><h4 class="en">REST API</h4>
+        <p class="es">Permite que otros sistemas consuman los datos automáticamente. Es el puente entre tu base de datos estructurada y tus aplicaciones, dashboards o modelos de IA.</p>
+        <p class="en">Allows other systems to consume data automatically. It is the bridge between your structured database and your applications, dashboards or AI models.</p>
+      </div>
+      <div class="feat-card rv" style="transition-delay:.25s">
+        <div class="feat-icon">👥</div>
+        <h4 class="es">Control de Acceso</h4><h4 class="en">Access Control</h4>
+        <p class="es">Gestiona permisos por usuario o equipo. Cada persona accede solo a lo que necesita, manteniendo la integridad y confidencialidad de los datos.</p>
+        <p class="en">Manage permissions by user or team. Each person accesses only what they need, maintaining data integrity and confidentiality.</p>
+      </div>
+      <div class="feat-card rv" style="transition-delay:.3s">
+        <div class="feat-icon">📊</div>
+        <h4 class="es">Visibilidad de Datos</h4><h4 class="en">Data Visibility</h4>
+        <p class="es">Monitorea el estado de tus datos antes de ser utilizados: calidad, volumen y consistencia. Detecta problemas antes de que lleguen a tus herramientas de análisis.</p>
+        <p class="en">Monitor the state of your data before it is used: quality, volume and consistency. Detect issues before they reach your analytics tools.</p>
+      </div>
+    </div>
+    <div id="tab-mobile" class="tab-panel feat-grid">
+      <div class="feat-card rv">
+        <div class="feat-icon">🎙️</div>
+        <h4 class="es">Captura en Terreno</h4><h4 class="en">Field Capture</h4>
+        <p class="es">Registra datos directamente desde el origen de la operación, evitando pérdida, retraso o distorsión de la información antes de llegar al sistema.</p>
+        <p class="en">Record data directly from the point of operation, avoiding loss, delay or distortion of information before it reaches the system.</p>
+      </div>
+      <div class="feat-card rv" style="transition-delay:.08s">
+        <div class="feat-icon">📶</div>
+        <h4 class="es">Entrada por Voz (IA)</h4><h4 class="en">Voice Input (AI)</h4>
+        <p class="es">Describe lo que ocurre y AKI lo transforma en datos estructurados automáticamente, según el esquema definido. Sin tipear, sin formularios manuales.</p>
+        <p class="en">Describe what happens and AKI automatically transforms it into structured data, according to the defined schema. No typing, no manual forms.</p>
+      </div>
+      <div class="feat-card rv" style="transition-delay:.16s">
+        <div class="feat-icon">📷</div>
+        <h4 class="es">Operación Offline</h4><h4 class="en">Offline Operation</h4>
+        <p class="es">Captura datos sin conexión y sincroniza cuando vuelve la señal, manteniendo continuidad operacional en zonas remotas o con conectividad limitada.</p>
+        <p class="en">Capture data without connection and sync when signal returns, maintaining operational continuity in remote areas or with limited connectivity.</p>
+      </div>
+      <div class="feat-card rv" style="transition-delay:.24s">
+        <div class="feat-icon">✅</div>
+        <h4 class="es">Validación en Origen</h4><h4 class="en">Source Validation</h4>
+        <p class="es">Los datos se validan en el momento de captura, evitando que errores o inconsistencias lleguen a la base de datos central y contaminen el conjunto.</p>
+        <p class="en">Data is validated at the time of capture, preventing errors or inconsistencies from reaching the central database and contaminating the dataset.</p>
+      </div>
+      <div class="feat-card rv" style="transition-delay:.32s">
+        <div class="feat-icon">🔔</div>
+        <h4 class="es">Sincronización Automática</h4><h4 class="en">Automatic Sync</h4>
+        <p class="es">Los registros se envían automáticamente al sistema central cuando hay conexión disponible, sin intervención del usuario ni pasos manuales.</p>
+        <p class="en">Records are automatically sent to the central system when a connection is available, without user intervention or manual steps.</p>
+      </div>
+      <div class="feat-card rv" style="transition-delay:.4s">
+        <div class="feat-icon">🔄</div>
+        <h4 class="es">Contexto de Captura</h4><h4 class="en">Capture Context</h4>
+        <p class="es">Agrega imágenes, archivos o ubicación GPS para enriquecer cada dato con su contexto de origen. El registro no es solo el número: es la situación completa.</p>
+        <p class="en">Add images, files or GPS location to enrich each data point with its source context. The record is not just the number: it is the complete situation.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- GOVERNANCE -->
+<section id="governance">
+  <div class="container">
+    <div class="gov-strip rv">
+      <div>
+        <span class="sec-tag es">Gobernanza de Datos</span>
+        <span class="sec-tag en">Data Governance</span>
+        <h2 class="sec-h2 es">Datos confiables<br>no ocurren por accidente.</h2>
+        <h2 class="sec-h2 en">Reliable data<br>doesn't happen by accident.</h2>
+        <ul class="gov-list">
+          <li>
+            <div class="gov-check"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 6l3 3 5-5"/></svg></div>
+            <span class="es">Historial completo de cada dato: quién lo creó, cuándo cambió, qué cambió y quién lo cambió (auditoría)</span>
+            <span class="en">Complete history of every data point: who created it, when it changed, what changed and who changed it (audit)</span>
+          </li>
+          <li>
+            <div class="gov-check"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 6l3 3 5-5"/></svg></div>
+            <span class="es">Control de acceso por roles: cada persona ve y opera solo lo que le corresponde</span>
+            <span class="en">Role-based access control: each person sees and operates only what they are assigned to</span>
+          </li>
+          <li>
+            <div class="gov-check"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 6l3 3 5-5"/></svg></div>
+            <span class="es">Validación estructural automática: los datos cumplen el esquema antes de entrar a la base</span>
+            <span class="en">Automatic structural validation: data meets the schema before entering the database</span>
+          </li>
+          <li>
+            <div class="gov-check"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 6l3 3 5-5"/></svg></div>
+            <span class="es">Centralización en base de datos: un repositorio único, ordenado y consultable</span>
+            <span class="en">Centralized in a database: a single, ordered and queryable repository</span>
+          </li>
+          <li>
+            <div class="gov-check"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 6l3 3 5-5"/></svg></div>
+            <span class="es">Preparación para consumo por sistemas, dashboards o modelos de IA</span>
+            <span class="en">Ready for consumption by systems, dashboards or AI models</span>
+          </li>
+        </ul>
+      </div>
+      <div class="gov-right rvr">
+        <div class="gov-certs">
+          <div class="gov-cert">
+            <div class="gov-cert-icon">🔒</div>
+            <div class="gov-cert-body"><strong>AES-256</strong><span class="es">Cifrado</span><span class="en">Encrypted</span></div>
+          </div>
+          <div class="gov-cert">
+            <div class="gov-cert-icon">🗄️</div>
+            <div class="gov-cert-body"><strong>Base de datos</strong><span class="es">Centralizada</span><span class="en">Centralized</span></div>
+          </div>
+          <div class="gov-cert">
+            <div class="gov-cert-icon">👁️</div>
+            <div class="gov-cert-body"><strong>Auditoría</strong><span class="es">Inmutable</span><span class="en">Immutable</span></div>
+          </div>
+          <div class="gov-cert">
+            <div class="gov-cert-icon">🛡️</div>
+            <div class="gov-cert-body"><strong>Acceso</strong><span class="es">Por roles</span><span class="en">Role-based</span></div>
+          </div>
+        </div>
+        <div class="gov-auditlog">
+          <div class="gov-auditlog-header">
+            <span class="gov-live-dot"></span>
+            <span class="es">Registro de auditoría</span>
+            <span class="en">Audit trail</span>
+          </div>
+          <div class="gov-auditlog-feed" id="auditFeed"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INDUSTRIES -->
+<section id="industries">
+  <div class="container">
+    <div class="rv text-center">
+      <span class="sec-tag es">Industrias</span>
+      <span class="sec-tag en">Industries</span>
+      <h2 class="sec-h2 es">Donde los datos nacen en la operación,<br>AKI los transforma en sistema.</h2>
+      <h2 class="sec-h2 en">Where data is born in operations,<br>AKI transforms it into a system.</h2>
+    </div>
+    <div class="ind-grid">
+      <div class="ind-card rv" style="transition-delay:.05s">
+        <div class="ind-emoji">🏭</div>
+        <h4 class="es">Manufactura</h4><h4 class="en">Manufacturing</h4>
+        <p class="es">Registros de producción, calidad e inventario capturados en planta y disponibles para análisis operacional en tiempo real.</p>
+        <p class="en">Production, quality and inventory records captured on-site and available for real-time operational analysis.</p>
+      </div>
+      <div class="ind-card rv" style="transition-delay:.1s">
+        <div class="ind-emoji">🛒</div>
+        <h4 class="es">Retail & Distribución</h4><h4 class="en">Retail & Distribution</h4>
+        <p class="es">Centraliza planes de venta, stock y reportes de puntos de venta en una base gobernada. Una sola fuente de verdad para toda la cadena.</p>
+        <p class="en">Centralize sales plans, stock data and point-of-sale reports in a governed database. One single source of truth for the entire chain.</p>
+      </div>
+      <div class="ind-card rv" style="transition-delay:.15s">
+        <div class="ind-emoji">🏗️</div>
+        <h4 class="es">Construcción</h4><h4 class="en">Construction</h4>
+        <p class="es">Inspecciones, avance y control de obra registrados desde terreno. Trazables y disponibles para la gestión del proyecto en tiempo real.</p>
+        <p class="en">Inspections, progress and site control recorded from the field. Traceable and available for real-time project management.</p>
+      </div>
+      <div class="ind-card rv" style="transition-delay:.2s">
+        <div class="ind-emoji">⛏️</div>
+        <h4 class="es">Minería</h4><h4 class="en">Mining</h4>
+        <p class="es">Carga de planes de producción, reportes de terreno y control de procesos capturados en faena y convertidos en datos trazables, centralizados y listos para la toma de decisiones.</p>
+        <p class="en">Production plan uploads, field reports and process control captured on-site and converted into traceable, centralized data ready for decision-making.</p>
+      </div>
+      <div class="ind-card rv" style="transition-delay:.25s">
+        <div class="ind-emoji">🌾</div>
+        <h4 class="es">Agroindustria</h4><h4 class="en">Agribusiness</h4>
+        <p class="es">Registros de campo en modo offline. Cosechas, insumos y trazabilidad de lotes disponibles al sincronizar con la base central.</p>
+        <p class="en">Field records in offline mode. Harvests, inputs and lot traceability available upon sync with the central database.</p>
+      </div>
+      <div class="ind-card rv" style="transition-delay:.3s">
+        <div class="ind-emoji">💼</div>
+        <h4 class="es">Servicios Profesionales</h4><h4 class="en">Professional Services</h4>
+        <p class="es">Firmas y consultoras que gestionan datos de clientes con requisitos estrictos de auditoría, trazabilidad y confidencialidad.</p>
+        <p class="en">Firms and consultancies managing client data with strict audit, traceability and confidentiality requirements.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA MID -->
+<section id="cta-mid">
+  <div class="container">
+    <div class="cta-mid-inner rv">
+      <span class="sec-tag es">¿Listo para empezar?</span>
+      <span class="sec-tag en">Ready to start?</span>
+      <h2 class="sec-h2 es">Empieza con tus archivos.<br>Termina con datos utilizables.</h2>
+      <h2 class="sec-h2 en">Start with your files.<br>End with usable data.</h2>
+      <p class="sec-p es" style="margin:1rem auto 2rem">No necesitas cambiar Excel. Solo necesitas que deje de ser tu base de datos.</p>
+      <p class="sec-p en" style="margin:1rem auto 2rem">You don't need to change Excel. You just need it to stop being your database.</p>
+      <button class="btn-primary" onclick="openModal()" style="font-size:1.05rem;padding:.8rem 2.2rem">
+        <span class="es">Ver cómo funciona con tus datos</span>
+        <span class="en">See how it works with your data</span>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing">
+  <div class="container">
+    <div class="rv text-center">
+      <span class="sec-tag es">Precios</span>
+      <span class="sec-tag en">Pricing</span>
+      <h2 class="sec-h2 es">Planes que crecen con tu negocio.</h2>
+      <h2 class="sec-h2 en">Plans that grow with your business.</h2>
+      <p class="sec-p es">Empieza estructurando datos. Escala hacia operación gobernada.</p>
+      <p class="sec-p en">Start by structuring data. Scale towards governed operations.</p>
+    </div>
+    <div class="price-toggle-wrap">
+      <span class="pt-label active es" id="ptLabelMes">Mensual</span>
+      <span class="pt-label active en" id="ptLabelMonth">Monthly</span>
+      <div class="pt-track" id="priceToggle" onclick="togglePricing()" role="switch" tabindex="0">
+        <div class="pt-thumb"></div>
+      </div>
+      <span class="pt-label es" id="ptLabelAnual">Anual</span>
+      <span class="pt-label en" id="ptLabelAnnual">Annual</span>
+      <span class="pt-save es">Ahorra 20%</span>
+      <span class="pt-save en">Save 20%</span>
+    </div>
+    <div class="pricing-grid">
+      <!-- STARTER -->
+      <div class="price-card rv" style="transition-delay:.05s">
+        <div class="price-tier">Starter</div>
+        <div class="price-amount"><sup>$</sup><span class="pa-num" data-monthly="0" data-annual="0">0</span><span class="price-period es">/mes</span><span class="price-period en">/mo</span></div>
+        <div class="price-desc es">Para equipos que quieren estructurar y centralizar sus primeros datos operacionales.</div>
+        <div class="price-desc en">For teams ready to structure and centralize their first operational datasets.</div>
+        <div class="price-divider"></div>
+        <ul class="price-features">
+          <li><svg class="pf-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg><span class="es">Hasta 3 usuarios</span><span class="en">Up to 3 users</span></li>
+          <li><svg class="pf-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg><span class="es">2 proyectos activos</span><span class="en">2 active projects</span></li>
+          <li><svg class="pf-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg><span class="es">500 MB de almacenamiento</span><span class="en">500 MB storage</span></li>
+          <li><svg class="pf-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg><span class="es">Ingesta manual de archivos</span><span class="en">Manual file ingestion</span></li>
+          <li><svg class="pf-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg><span class="es">Soporte por email</span><span class="en">Email support</span></li>
+        </ul>
+        <button class="price-cta es" onclick="openModal()">Comenzar gratis</button>
+        <button class="price-cta en" onclick="openModal()">Start free</button>
+      </div>
+      <!-- GROWTH -->
+      <div class="price-card rv featured" style="transition-delay:.1s">
+        <div class="price-badge es">Más popular</div>
+        <div class="price-badge en">Most popular</div>
+        <div class="price-tier">Growth</div>
+        <div class="price-amount"><sup>$</sup><span class="pa-num" data-monthly="49" data-annual="39">49</span><span class="price-period es">/mes</span><span class="price-period en">/mo</span></div>
+        <div class="price-desc es">Para operaciones en crecimiento con equipos distribuidos que necesitan datos gobernados.</div>
+        <div class="price-desc en">For growing operations with distributed teams that need governed data.</div>
+        <div class="price-divider"></div>
+        <ul class="price-features">
+          <li><svg class="pf-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg><span class="es">Hasta 15 usuarios</span><span class="en">Up to 15 users</span></li>
+          <li><svg class="pf-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg><span class="es">Proyectos ilimitados</span><span class="en">Unlimited projects</span></li>
+          <li><svg class="pf-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg><span class="es">10 GB de almacenamiento</span><span class="en">10 GB storage</span></li>
+          <li><svg class="pf-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg><span class="es">App móvil + voz IA</span><span class="en">Mobile app + AI voice</span></li>
+          <li><svg class="pf-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg><span class="es">API REST básica</span><span class="en">Basic REST API</span></li>
+          <li><svg class="pf-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg><span class="es">Soporte prioritario</span><span class="en">Priority support</span></li>
+        </ul>
+        <button class="price-cta es" onclick="openModal()">Solicitar demo</button>
+        <button class="price-cta en" onclick="openModal()">Request demo</button>
+      </div>
+      <!-- BUSINESS -->
+      <div class="price-card rv" style="transition-delay:.15s">
+        <div class="price-tier">Business</div>
+        <div class="price-amount"><sup>$</sup><span class="pa-num" data-monthly="149" data-annual="119">149</span><span class="price-period es">/mes</span><span class="price-period en">/mo</span></div>
+        <div class="price-desc es">Para organizaciones con alto volumen de datos, múltiples fuentes y requisitos de gobernanza.</div>
+        <div class="price-desc en">For organizations with high data volume, multiple sources and governance requirements.</div>
+        <div class="price-divider"></div>
+        <ul class="price-features">
+          <li><svg class="pf-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg><span class="es">Hasta 60 usuarios</span><span class="en">Up to 60 users</span></li>
+          <li><svg class="pf-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg><span class="es">100 GB de almacenamiento</span><span class="en">100 GB storage</span></li>
+          <li><svg class="pf-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg><span class="es">SSO / SAML integrado</span><span class="en">Integrated SSO / SAML</span></li>
+          <li><svg class="pf-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg><span class="es">Webhooks avanzados</span><span class="en">Advanced webhooks</span></li>
+          <li><svg class="pf-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg><span class="es">Auditoría completa</span><span class="en">Full audit trail</span></li>
+          <li><svg class="pf-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg><span class="es">SLA garantizado</span><span class="en">Guaranteed SLA</span></li>
+        </ul>
+        <button class="price-cta es" onclick="openModal()">Solicitar demo</button>
+        <button class="price-cta en" onclick="openModal()">Request demo</button>
+      </div>
+      <!-- ENTERPRISE -->
+      <div class="price-card rv" style="transition-delay:.2s">
+        <div class="price-tier">Enterprise</div>
+        <div class="price-amount" style="font-size:1.6rem;padding-top:.4rem">
+          <span class="es" style="font-size:1.1rem;color:rgba(255,255,255,.7);letter-spacing:-.01em">A medida</span>
+          <span class="en" style="font-size:1.1rem;color:rgba(255,255,255,.7);letter-spacing:-.01em">Custom</span>
+        </div>
+        <div class="price-desc es">Para empresas con infraestructura propia, integraciones críticas o despliegue on-premise.</div>
+        <div class="price-desc en">For companies with their own infrastructure, critical integrations or on-premise deployment.</div>
+        <div class="price-divider"></div>
+        <ul class="price-features">
+          <li><svg class="pf-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg><span class="es">Usuarios ilimitados</span><span class="en">Unlimited users</span></li>
+          <li><svg class="pf-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg><span class="es">On-premise o cloud privado</span><span class="en">On-premise or private cloud</span></li>
+          <li><svg class="pf-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg><span class="es">Integraciones personalizadas</span><span class="en">Custom integrations</span></li>
+          <li><svg class="pf-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg><span class="es">Compliance y auditoría avanzada</span><span class="en">Advanced compliance & audit</span></li>
+          <li><svg class="pf-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg><span class="es">Gerente de cuenta dedicado</span><span class="en">Dedicated account manager</span></li>
+          <li><svg class="pf-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg><span class="es">SLA 99.99% + soporte 24/7</span><span class="en">99.99% SLA + 24/7 support</span></li>
+        </ul>
+        <button class="price-cta es" onclick="openModal()">Hablar con ventas</button>
+        <button class="price-cta en" onclick="openModal()">Talk to sales</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq">
+  <div class="container">
+    <div class="rv text-center">
+      <span class="sec-tag">FAQ</span>
+      <h2 class="sec-h2 es">Preguntas frecuentes</h2>
+      <h2 class="sec-h2 en">Frequently asked questions</h2>
+    </div>
+    <div class="faq-list">
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          <span class="es">¿Necesito un equipo técnico para implementar AKI Collector?</span>
+          <span class="en">Do I need a technical team to implement AKI Collector?</span>
+          <div class="faq-icon">+</div>
+        </button>
+        <div class="faq-a">
+          <div class="faq-a-inner es">No necesariamente. AKI Collector está diseñado para que equipos de negocio puedan crear y gestionar datos sin necesidad de código. Sin embargo, cuando existen casos más complejos, nuestro equipo de soporte te acompaña en la definición y configuración, asegurando que puedas implementar tu modelo rápidamente y de forma correcta. El objetivo es simple: que puedas empezar rápido y escalar con apoyo cuando lo necesites.</div>
+          <div class="faq-a-inner en">Not necessarily. AKI Collector is designed for business teams to create and manage data structures without code. However, when more complex cases arise, our support team accompanies you in the definition and configuration, ensuring you can implement your model quickly and correctly. The goal is simple: start fast and scale with support when you need it.</div>
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          <span class="es">¿Qué formatos de archivo son compatibles?</span>
+          <span class="en">What file formats are supported?</span>
+          <div class="faq-icon">+</div>
+        </button>
+        <div class="faq-a">
+          <div class="faq-a-inner es">Soportamos Excel (.xlsx, .xls), CSV y TXT, que representan la mayoría de los datos operacionales que viven fuera de los sistemas. La hoja de ruta incluye soporte para JSON, XML y conexiones directas a bases de datos externas.</div>
+          <div class="faq-a-inner en">We support Excel (.xlsx, .xls), CSV and TXT, which represent the majority of operational data that lives outside systems. The roadmap includes support for JSON, XML and direct connections to external databases.</div>
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          <span class="es">¿Cómo funciona la IA de voz en la app móvil?</span>
+          <span class="en">How does the voice AI work in the mobile app?</span>
+          <div class="faq-icon">+</div>
+        </button>
+        <div class="faq-a">
+          <div class="faq-a-inner es">El usuario activa el micrófono desde la app móvil y describe verbalmente el registro. La IA transcribe, extrae los campos según el esquema definido y completa el formulario. El usuario revisa y confirma antes de sincronizar.</div>
+          <div class="faq-a-inner en">The user activates the microphone from the mobile app and verbally describes the record. The AI transcribes, extracts fields according to the defined schema and fills out the form. The user reviews and confirms before syncing.</div>
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          <span class="es">¿Mis datos están seguros?</span>
+          <span class="en">Is my data secure?</span>
+          <div class="faq-icon">+</div>
+        </button>
+        <div class="faq-a">
+          <div class="faq-a-inner es">Sí. Todos los datos se cifran con AES-256 en tránsito y en reposo. La plataforma opera en infraestructura cloud con respaldos automáticos. El acceso está controlado por roles, y cada acción queda registrada en el historial de auditoría, garantizando trazabilidad completa.</div>
+          <div class="faq-a-inner en">Yes. All data is encrypted with AES-256 in transit and at rest. The platform runs on cloud infrastructure with automatic backups. Access is controlled by roles, and every action is recorded in the audit history, ensuring complete traceability.</div>
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          <span class="es">¿AKI Collector es una herramienta de análisis o BI?</span>
+          <span class="en">Is AKI Collector an analytics or BI tool?</span>
+          <div class="faq-icon">+</div>
+        </button>
+        <div class="faq-a">
+          <div class="faq-a-inner es">No. AKI Collector no es un sistema de análisis. Es una capa previa: convierte archivos en una base de datos estructurada. Desde ahí, puedes usar Power BI, Tableau u otras herramientas para analizar. AKI Collector prepara los datos; tú decides cómo explotarlos.</div>
+          <div class="faq-a-inner en">No. AKI Collector is not an analytics system. It is a prior layer: it converts files into a structured database. From there, you can use Power BI, Tableau or other tools to analyze. AKI Collector prepares the data; you decide how to use it.</div>
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          <span class="es">¿Hay período de prueba gratuito?</span>
+          <span class="en">Is there a free trial period?</span>
+          <div class="faq-icon">+</div>
+        </button>
+        <div class="faq-a">
+          <div class="faq-a-inner es">Sí. Ofrecemos un período de prueba de 30 días donde puedes utilizar AKI Collector con tus propios datos. Durante este proceso, nuestro equipo estará disponible para acompañarte, entender tu caso de uso, ayudarte a estructurar tu información y asegurar que obtengas valor real desde el inicio. Más que una prueba, es un proceso guiado para validar cómo AKI Collector se adapta a tu operación.</div>
+          <div class="faq-a-inner en">Yes. We offer a 30-day trial period where you can use AKI Collector with your own data. During this process, our team will be available to accompany you, understand your use case, help you structure your information and ensure you get real value from the start. More than a trial, it is a guided process to validate how AKI Collector adapts to your operation.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PARTNERS -->
+<section id="partners" style="padding:6rem 0">
+  <div class="container">
+    <div class="rv text-center">
+      <span class="sec-tag es">Partners</span>
+      <span class="sec-tag en">Partners</span>
+      <h2 class="sec-h2 es">Empresas que usan y distribuyen<br>AKI Collector.</h2>
+      <h2 class="sec-h2 en">Companies that use and distribute<br>AKI Collector.</h2>
+      <p class="sec-p es">Organizaciones que ya integran AKI Collector en sus operaciones o lo ofrecen como parte de su propuesta de valor.</p>
+      <p class="sec-p en">Organizations that already integrate AKI Collector into their operations or offer it as part of their value proposition.</p>
+    </div>
+    <div class="partners-grid rv" style="transition-delay:.1s">
+      <div class="partner-card">
+        <div class="partner-logo">
+          <span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1.3rem;color:#fff">Dumas</span>
+        </div>
+        <div class="partner-body">
+          <h4 class="es">Dumas Contratistas Mineros</h4>
+          <h4 class="en">Dumas Mining Contractors</h4>
+          <p class="es">Empresa de servicios mineros que utiliza AKI Collector para centralizar registros de terreno, reportes operacionales y control de procesos en faena.</p>
+          <p class="en">Mining services company that uses AKI Collector to centralize field records, operational reports and process control on-site.</p>
+          <span class="partner-tag es">Minería</span>
+          <span class="partner-tag en">Mining</span>
+        </div>
+      </div>
+      <div class="partner-card">
+        <div class="partner-logo">
+          <span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1.1rem;color:#fff">Avanza SSO</span>
+        </div>
+        <div class="partner-body">
+          <h4 class="es">Avanza SSO</h4>
+          <h4 class="en">Avanza SSO</h4>
+          <p class="es">Plataforma de Seguridad y Salud Ocupacional que integra AKI Collector para estructurar y centralizar datos de inspecciones, incidentes y cumplimiento normativo.</p>
+          <p class="en">Occupational Health and Safety platform that integrates AKI Collector to structure and centralize inspection, incident and regulatory compliance data.</p>
+          <span class="partner-tag es">Seguridad & Salud</span>
+          <span class="partner-tag en">Safety & Health</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA FINAL -->
+<section id="cta-final">
+  <div class="cta-glow"></div>
+  <div class="container">
+    <div class="rv">
+      <span class="sec-tag es">Empieza hoy</span>
+      <span class="sec-tag en">Start today</span>
+      <h2 class="sec-h2 es" style="font-size:clamp(2rem,4vw,3rem);max-width:700px;margin:0 auto .8rem">
+        Tus datos ya existen.<br>Solo falta convertirlos en algo utilizable.
+      </h2>
+      <h2 class="sec-h2 en" style="font-size:clamp(2rem,4vw,3rem);max-width:700px;margin:0 auto .8rem">
+        Your data already exists.<br>It just needs to become something usable.
+      </h2>
+      <p class="sec-p es" style="margin:.6rem auto 2.5rem;font-size:1.05rem">
+        AKI Collector transforma archivos dispersos en una base de datos estructurada, lista para ser utilizada por tus sistemas, dashboards o inteligencia artificial.
+      </p>
+      <p class="sec-p en" style="margin:.6rem auto 2.5rem;font-size:1.05rem">
+        AKI Collector transforms scattered files into a structured database, ready to be used by your systems, dashboards or artificial intelligence.
+      </p>
+      <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap">
+        <button class="btn-primary" onclick="openModal()" style="font-size:1.05rem;padding:.85rem 2.4rem">
+          <span class="es">Solicitar Demo Gratis</span>
+          <span class="en">Request Free Demo</span>
+        </button>
+        <a href="mailto:contacto@akicollector.io" class="btn-ghost" style="font-size:1rem">
+          <span class="es">Hablar con el equipo</span>
+          <span class="en">Talk to the team</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <a href="#hero" class="nav-logo" style="display:inline-flex;margin-bottom:.2rem">
+          <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" width="28" height="28">
+            <rect width="32" height="32" rx="8" fill="url(#ng2)"/>
+            <path d="M8 16L14 10L20 16L26 10" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M8 22L14 16L20 22L26 16" stroke="rgba(255,255,255,0.5)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <defs><linearGradient id="ng2" x1="0" y1="0" x2="32" y2="32"><stop stop-color="#15A4EC"/><stop offset="1" stop-color="#68C5ED"/></linearGradient></defs>
+          </svg>
+          <span style="font-family:'Space Grotesk',sans-serif;font-weight:700;color:#fff;font-size:1rem">AKI Collector</span>
+        </a>
+        <p class="es">Convierte archivos en datos. Estructura, controla y usa tu información con AKI Collector.</p>
+        <p class="en">Turn files into data. Structure, control and use your information with AKI Collector.</p>
+        <div class="social-links">
+          <a href="#" class="social-link" title="LinkedIn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2"/></svg>
+          </a>
+          <a href="#" class="social-link" title="Facebook">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+          </a>
+          <a href="#" class="social-link" title="Instagram">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+          </a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h5 class="es">Producto</h5>
+        <h5 class="en">Product</h5>
+        <ul>
+          <li><a href="#features" class="es">Características</a><a href="#features" class="en">Features</a></li>
+          <li><a href="#pricing" class="es">Precios</a><a href="#pricing" class="en">Pricing</a></li>
+          <li><a href="#" class="es">Integraciones</a><a href="#" class="en">Integrations</a></li>
+          <li><a href="#" class="es">Hoja de ruta</a><a href="#" class="en">Roadmap</a></li>
+          <li><a href="#" class="es">API Docs</a><a href="#" class="en">API Docs</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5 class="es">Empresa</h5>
+        <h5 class="en">Company</h5>
+        <ul>
+          <li><a href="#" class="es">Sobre nosotros</a><a href="#" class="en">About us</a></li>
+          <li><a href="#" class="es">Blog</a><a href="#" class="en">Blog</a></li>
+          <li><a href="#" class="es">Casos de éxito</a><a href="#" class="en">Case studies</a></li>
+          <li><a href="#" class="es">Prensa</a><a href="#" class="en">Press</a></li>
+          <li><a href="#" class="es">Contacto</a><a href="#" class="en">Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5 class="es">Soporte</h5>
+        <h5 class="en">Support</h5>
+        <ul>
+          <li><a href="#faq">FAQ</a></li>
+          <li><a href="#" class="es">Centro de ayuda</a><a href="#" class="en">Help center</a></li>
+          <li><a href="#" class="es">Estado del sistema</a><a href="#" class="en">System status</a></li>
+          <li><a href="#" class="es">Seguridad</a><a href="#" class="en">Security</a></li>
+          <li><a href="mailto:soporte@akicollector.io" class="es">soporte@akicollector.io</a><a href="mailto:support@akicollector.io" class="en">support@akicollector.io</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2025 AKI Collector. <span class="es">Todos los derechos reservados.</span><span class="en">All rights reserved.</span></p>
+      <div style="display:flex;gap:1.5rem;flex-wrap:wrap">
+        <a href="#" class="es">Política de Privacidad</a><a href="#" class="en">Privacy Policy</a>
+        <a href="#" class="es">Términos de Uso</a><a href="#" class="en">Terms of Use</a>
+        <a href="#" class="es">Cookies</a><a href="#" class="en">Cookies</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- DEMO MODAL -->
+<div class="modal-overlay" id="modal" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <h2 class="es">Ver AKI en acción</h2>
+    <h2 class="en">See AKI in action</h2>
+    <p class="es">Cuéntanos tu caso de uso. Te mostramos AKI operando con datos similares a los tuyos. Sin demo genérica.</p>
+    <p class="en">Tell us your use case. We'll show AKI operating with data similar to yours. No generic demo.</p>
+    <form onsubmit="submitForm(event)">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="es">Nombre *</label><label class="en">Name *</label>
+          <input type="text" placeholder="Ana García" required/>
+        </div>
+        <div class="form-group">
+          <label class="es">Email corporativo *</label><label class="en">Corporate email *</label>
+          <input type="email" placeholder="ana@empresa.com" required/>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="es">Empresa *</label><label class="en">Company *</label>
+          <input type="text" placeholder="Empresa S.A." required/>
+        </div>
+        <div class="form-group">
+          <label class="es">Tamaño del equipo</label><label class="en">Team size</label>
+          <select>
+            <option class="es">1-10 personas</option><option class="en">1-10 people</option>
+            <option class="es">11-50 personas</option><option class="en">11-50 people</option>
+            <option class="es">51-200 personas</option><option class="en">51-200 people</option>
+            <option class="es">+200 personas</option><option class="en">+200 people</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="es">¿Cuál es el desafío de datos que quieres resolver?</label>
+        <label class="en">What data challenge are you trying to solve?</label>
+        <textarea placeholder="Ej: consolidar reportes de campo, reemplazar Excel en planificación, centralizar datos de múltiples sucursales..." class="es"></textarea>
+        <textarea placeholder="E.g: consolidate field reports, replace Excel in planning, centralize data from multiple branches..." class="en"></textarea>
+      </div>
+      <button type="submit" class="form-submit">
+        <span class="es">Solicitar demostración →</span>
+        <span class="en">Request demonstration →</span>
+      </button>
+    </form>
+  </div>
+</div>
+
+<script>
+// ─── CANVAS BACKGROUND ───
+const canvas = document.getElementById('bg');
+const ctx = canvas.getContext('2d');
+let W, H;
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+let rawY = 0, smoothY = 0;
+window.addEventListener('scroll', () => { rawY = window.scrollY; });
+
+function bgCol(p) {
+  const stops = [
+    [0,   [6, 9, 15]],
+    [0.25,[7, 10, 16]],
+    [0.45,[4, 10, 22]],
+    [0.55,[5, 10, 19]],
+    [1,   [6, 9, 15]]
+  ];
+  let a = stops[0], b = stops[stops.length-1];
+  for (let i = 0; i < stops.length-1; i++) {
+    if (p >= stops[i][0] && p <= stops[i+1][0]) { a = stops[i]; b = stops[i+1]; break; }
+  }
+  const t = a[0] === b[0] ? 0 : (p - a[0]) / (b[0] - a[0]);
+  const r = Math.round(a[1][0] + (b[1][0]-a[1][0])*t);
+  const g = Math.round(a[1][1] + (b[1][1]-a[1][1])*t);
+  const bl = Math.round(a[1][2] + (b[1][2]-a[1][2])*t);
+  return `rgb(${r},${g},${bl})`;
+}
+
+// Grid
+function drawGrid(p) {
+  const size = 44;
+  const ox = 0;
+  const oy = (smoothY * 0.06) % size;
+  const alpha = 0.055 + p * 0.04;
+  ctx.strokeStyle = `rgba(21,164,236,${alpha})`;
+  ctx.lineWidth = 0.5;
+  ctx.beginPath();
+  for (let x = ox; x < W; x += size) { ctx.moveTo(x, 0); ctx.lineTo(x, H); }
+  for (let y = oy; y < H; y += size) { ctx.moveTo(0, y); ctx.lineTo(W, y); }
+  ctx.stroke();
+}
+
+// Orbs
+class Orb {
+  constructor(bx, by, rad, spd, col) {
+    this.bx = bx; this.by = by; this.rad = rad; this.spd = spd;
+    this.col = col; this.ang = Math.random() * Math.PI * 2; this.pt = Math.random();
+    this.x = bx * 1; this.y = by * 1;
+  }
+  update(p) {
+    this.ang += this.spd;
+    this.x = this.bx * W + Math.cos(this.ang) * this.rad * W;
+    this.y = this.by * H + Math.sin(this.ang) * this.rad * H + smoothY * 0.05;
+    if (p > 0.38 && p < 0.58) {
+      const t = Math.sin(((p - 0.38) / 0.20) * Math.PI);
+      this.x += (W * 0.5 - this.x) * t * 0.35;
+      this.y += (H * 0.5 - this.y) * t * 0.20;
+    }
+  }
+  draw() {
+    const [r, g, b, a] = this.col;
+    const sz = this.rad * Math.min(W, H) * 1.2;
+    const grd = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, sz);
+    grd.addColorStop(0, `rgba(${r},${g},${b},${a})`);
+    grd.addColorStop(1, `rgba(${r},${g},${b},0)`);
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, sz, 0, Math.PI * 2);
+    ctx.fillStyle = grd;
+    ctx.fill();
+  }
+}
+
+const orbs = [
+  new Orb(0.15, 0.25, 0.22, 0.0006, [21, 164, 236, 0.18]),
+  new Orb(0.82, 0.18, 0.20, -0.0008, [41, 171, 226, 0.14]),
+  new Orb(0.50, 0.65, 0.28, 0.0005, [104, 197, 237, 0.12]),
+  new Orb(0.72, 0.75, 0.18, -0.0007, [15, 100, 180, 0.16]),
+  new Orb(0.28, 0.80, 0.16, 0.0009, [21, 164, 236, 0.10]),
+];
+
+// Particles — performance-tuned (55 pts, 30fps cap, visibility pause)
+const particles = [];
+const NPART = 55;
+for (let i = 0; i < NPART; i++) {
+  particles.push({
+    x: Math.random(),
+    y: Math.random(),
+    vx: (Math.random() - 0.5) * 0.0007,
+    vy: (Math.random() - 0.5) * 0.0007,
+    r: Math.random() * 1.8 + 0.5,
+    a: Math.random() * 0.55 + 0.12
+  });
+}
+let mouseXN = -999, mouseYN = -999;
+document.addEventListener('mousemove', e => {
+  mouseXN = e.clientX / W;
+  mouseYN = e.clientY / H;
+});
+document.addEventListener('click', e => {
+  const tag = e.target.tagName;
+  if (['BUTTON','A','INPUT','SELECT','TEXTAREA','LABEL'].includes(tag)) return;
+  const nx = e.clientX / W, ny = e.clientY / H;
+  for (let k = 0; k < 4; k++) {
+    particles.push({
+      x: nx, y: ny,
+      vx: (Math.random() - 0.5) * 0.0022,
+      vy: (Math.random() - 0.5) * 0.0022,
+      r: Math.random() * 1.8 + 0.6,
+      a: Math.random() * 0.55 + 0.2,
+      life: 1
+    });
+    if (particles.length > 90) particles.splice(0, 1);
+  }
+});
+
+// Squared distances to skip sqrt when possible
+const LINK_SQ = 85 * 85, LINK = 85;
+const GRAB_SQ = 120 * 120, GRAB = 120;
+
+function drawParticles(p) {
+  const speed = 1 + (p > 0.18 && p < 0.42 ? (p - 0.18) / 0.24 * 2.5 : 0);
+  // Update + draw dots (iterate backwards so splice is safe)
+  for (let idx = particles.length - 1; idx >= 0; idx--) {
+    const pt = particles[idx];
+    pt.x += pt.vx * speed;
+    pt.y += pt.vy * speed;
+    if (pt.life !== undefined) {
+      pt.life -= 0.012;
+      if (pt.life <= 0) { particles.splice(idx, 1); continue; }
+    }
+    if (pt.x < 0) pt.x = 1; if (pt.x > 1) pt.x = 0;
+    if (pt.y < 0) pt.y = 1; if (pt.y > 1) pt.y = 0;
+    const px = pt.x * W, py = pt.y * H + smoothY * 0.02;
+    ctx.beginPath();
+    ctx.arc(px, py, pt.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(21,164,236,${pt.a * 0.75})`;
+    ctx.fill();
+  }
+  // Particle-to-particle lines (squared distance check first — skips sqrt)
+  ctx.lineWidth = 0.4;
+  for (let i = 0; i < particles.length; i++) {
+    const ax = particles[i].x * W, ay = particles[i].y * H + smoothY * 0.02;
+    for (let j = i + 1; j < particles.length; j++) {
+      const dx = ax - particles[j].x * W;
+      const dy = ay - (particles[j].y * H + smoothY * 0.02);
+      const d2 = dx*dx + dy*dy;
+      if (d2 < LINK_SQ) {
+        const dist = Math.sqrt(d2);
+        ctx.strokeStyle = `rgba(21,164,236,${(1 - dist/LINK) * 0.13})`;
+        ctx.beginPath();
+        ctx.moveTo(ax, ay);
+        ctx.lineTo(particles[j].x*W, particles[j].y*H + smoothY*0.02);
+        ctx.stroke();
+      }
+    }
+    // Hover grab lines
+    if (mouseXN > -100) {
+      const dx = ax - mouseXN * W;
+      const dy = ay - mouseYN * H;
+      const d2 = dx*dx + dy*dy;
+      if (d2 < GRAB_SQ) {
+        const dist = Math.sqrt(d2);
+        const alpha = (1 - dist/GRAB) * 0.55;
+        ctx.strokeStyle = `rgba(104,197,237,${alpha})`;
+        ctx.lineWidth = 0.7;
+        ctx.beginPath();
+        ctx.moveTo(mouseXN*W, mouseYN*H);
+        ctx.lineTo(ax, ay);
+        ctx.stroke();
+        ctx.lineWidth = 0.4;
+      }
+    }
+  }
+}
+
+// 30fps cap + Page Visibility pause
+let rafId = null;
+const FPS_INTERVAL = 1000 / 30;
+let lastFrameTime = 0;
+
+function loop(now) {
+  rafId = requestAnimationFrame(loop);
+  if (now - lastFrameTime < FPS_INTERVAL) return; // skip frame if too soon
+  lastFrameTime = now - ((now - lastFrameTime) % FPS_INTERVAL);
+
+  smoothY += (rawY - smoothY) * 0.08;
+  const maxY = Math.max(1, document.body.scrollHeight - H);
+  const p = Math.min(1, smoothY / maxY);
+  ctx.fillStyle = bgCol(p);
+  ctx.fillRect(0, 0, W, H);
+  drawGrid(p);
+  ctx.save();
+  ctx.filter = 'blur(55px)';
+  orbs.forEach(o => { o.update(p); o.draw(); });
+  ctx.restore();
+  drawParticles(p);
+}
+
+// Pause when tab is hidden, resume when visible
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+  } else {
+    if (!rafId) { lastFrameTime = 0; rafId = requestAnimationFrame(loop); }
+  }
+});
+
+rafId = requestAnimationFrame(loop);
+
+// ─── PARALLAX ───
+const hgrid = document.getElementById('hero-grid');
+const hvis = document.getElementById('hero-vis');
+let mouseX = 0, mouseY = 0;
+window.addEventListener('scroll', () => {
+  const sy = window.scrollY;
+  if (hgrid) hgrid.style.transform = `translateY(${sy * 0.09}px)`;
+  if (hvis) hvis.style.transform = `translateY(${sy * 0.13}px)`;
+});
+document.addEventListener('mousemove', e => {
+  mouseX = (e.clientX / window.innerWidth - 0.5) * 18;
+  mouseY = (e.clientY / window.innerHeight - 0.5) * 12;
+  if (hvis) hvis.style.transform = `translate(${mouseX * 0.4}px, ${mouseY * 0.4}px)`;
+});
+
+// ─── NAV ───
+const navEl = document.getElementById('nav');
+window.addEventListener('scroll', () => {
+  navEl.classList.toggle('scrolled', window.scrollY > 60);
+});
+
+// ─── REVEAL ───
+const revEls = document.querySelectorAll('.rv, .rvl, .rvr');
+const revObs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('visible'); revObs.unobserve(e.target); }
+  });
+}, { threshold: 0.12 });
+revEls.forEach(el => revObs.observe(el));
+
+// ─── LANGUAGE ───
+const html = document.documentElement;
+const langSwitch = document.getElementById('langToggle');
+const lsThumb = langSwitch.querySelector('.ls-thumb');
+function applyLang(lang) {
+  html.setAttribute('data-lang', lang);
+  lsThumb.style.transform = lang === 'en' ? 'translateX(18px)' : 'translateX(0)';
+}
+langSwitch.addEventListener('click', () => {
+  const cur = html.getAttribute('data-lang');
+  applyLang(cur === 'es' ? 'en' : 'es');
+});
+langSwitch.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' ') langSwitch.click(); });
+
+// ─── AUDIT LOG ───
+(function initAuditLog() {
+  const feed = document.getElementById('auditFeed');
+  if (!feed) return;
+  const esActions = [
+    ['ana@empresa.com','subió','Ventas_Q4.xlsx'],
+    ['carlos@corp.io','modificó','Inventario_nov.csv'],
+    ['sistema','validó','3.241 registros'],
+    ['luis@retail.com','exportó','Reporte_BI.json'],
+    ['maria@salud.org','creó','Proyecto Farma'],
+    ['sistema','sincronizó','App móvil → BD central'],
+    ['jorge@logistica.cl','eliminó','Borrador_test.txt'],
+    ['admin','asignó rol','Editor → carlos@corp.io'],
+  ];
+  const enActions = [
+    ['ana@company.com','uploaded','Sales_Q4.xlsx'],
+    ['carlos@corp.io','modified','Inventory_nov.csv'],
+    ['system','validated','3,241 records'],
+    ['luis@retail.com','exported','BI_Report.json'],
+    ['maria@health.org','created','Pharma Project'],
+    ['system','synced','Mobile app → Central DB'],
+    ['jorge@logistics.cl','deleted','Draft_test.txt'],
+    ['admin','assigned role','Editor → carlos@corp.io'],
+  ];
+  let idx = 0;
+  function addEntry() {
+    const lang = html.getAttribute('data-lang') || 'es';
+    const list = lang === 'es' ? esActions : enActions;
+    const [user, action, target] = list[idx % list.length];
+    const now = new Date();
+    const t = now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0')+':'+now.getSeconds().toString().padStart(2,'0');
+    const row = document.createElement('div');
+    row.className = 'gov-log-entry';
+    row.innerHTML = `<span class="log-time">${t}</span><span class="log-user">${user}</span><span class="log-action">${action} ${target}</span>`;
+    feed.insertBefore(row, feed.firstChild);
+    if (feed.children.length > 4) feed.removeChild(feed.lastChild);
+    idx++;
+  }
+  addEntry(); addEntry(); addEntry();
+  setInterval(addEntry, 2800);
+})();
+
+// ─── PRICING TOGGLE ───
+let isAnnual = false;
+function togglePricing() {
+  isAnnual = !isAnnual;
+  const track = document.getElementById('priceToggle');
+  track.classList.toggle('annual-on', isAnnual);
+  document.querySelectorAll('.pa-num').forEach(el => {
+    el.textContent = isAnnual ? el.dataset.annual : el.dataset.monthly;
+  });
+  const lang = html.getAttribute('data-lang');
+  // toggle period labels
+  const mesEl = document.getElementById('ptLabelMes');
+  const monthEl = document.getElementById('ptLabelMonth');
+  const anualEl = document.getElementById('ptLabelAnual');
+  const annualEl = document.getElementById('ptLabelAnnual');
+  if(mesEl) mesEl.classList.toggle('active', !isAnnual);
+  if(monthEl) monthEl.classList.toggle('active', !isAnnual);
+  if(anualEl) anualEl.classList.toggle('active', isAnnual);
+  if(annualEl) annualEl.classList.toggle('active', isAnnual);
+}
+document.getElementById('priceToggle').addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' ') togglePricing(); });
+
+// ─── TABS ───
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ─── FAQ ───
+function toggleFaq(btn) {
+  const item = btn.parentElement;
+  const ans = item.querySelector('.faq-a');
+  const inner = item.querySelector('.faq-a-inner');
+  const icon = item.querySelector('.faq-icon');
+  const isOpen = item.classList.contains('open');
+  document.querySelectorAll('.faq-item.open').forEach(i => {
+    i.classList.remove('open');
+    i.querySelector('.faq-a').style.maxHeight = '0';
+  });
+  if (!isOpen) {
+    item.classList.add('open');
+    ans.style.maxHeight = inner.scrollHeight + 40 + 'px';
+  }
+}
+
+// ─── MODAL ───
+function openModal() {
+  document.getElementById('modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function closeModalOutside(e) {
+  if (e.target === document.getElementById('modal')) closeModal();
+}
+function submitForm(e) {
+  e.preventDefault();
+  const lang = html.getAttribute('data-lang');
+  alert(lang === 'es'
+    ? '¡Gracias! Nos pondremos en contacto contigo pronto para agendar tu demo.'
+    : 'Thank you! We will contact you soon to schedule your demo.');
+  closeModal();
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+// ─── SMOOTH SCROLL ───
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    const target = document.querySelector(a.getAttribute('href'));
+    if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth' }); }
+  });
+});
+</script>
+</body>
+</html>
